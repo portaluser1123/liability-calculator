@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liability Dashboard Pro</title>
+    <title>Liability Dashboard Pro + Bulk</title>
     <style>
         :root { --primary: #2c3e50; --debt-red: #d32f2f; --gain-green: #2e7d32; --bg: #f0f2f5; }
         
@@ -43,8 +43,8 @@
         
         /* Sidebar Action Buttons */
         .btn-csv { width: 100%; background: var(--gain-green); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 0.85rem; }
-        .btn-clear-all { width: 100%; background: none; border: 1px solid var(--debt-red); color: var(--debt-red); padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 0.75rem; text-transform: uppercase; }
-        .btn-clear-all:hover { background: #fff5f5; }
+        .btn-upload { width: 100%; background: #fff; border: 2px dashed var(--primary); color: var(--primary); padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 0.85rem; display: block; text-align: center; }
+        .btn-clear-all { width: 100%; background: none; border: 1px solid var(--debt-red); color: var(--debt-red); padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 0.75rem; text-transform: uppercase; }
 
         @media (max-width: 950px) { .dashboard { grid-template-columns: 1fr; } }
     </style>
@@ -104,7 +104,13 @@
     <div class="sidebar">
         <h2>Tracking List</h2>
         <div id="trackingList"></div>
-        <button class="btn-csv" onclick="downloadCSV()">Download CSV for Excel</button>
+        
+        <label class="btn-upload">
+            Bulk Upload CSV
+            <input type="file" id="csvInput" accept=".csv" style="display:none;" onchange="handleFileUpload(event)">
+        </label>
+        
+        <button class="btn-csv" onclick="downloadCSV()">Download Export (CSV)</button>
         <button class="btn-clear-all" onclick="clearAllItems()">Clear All Items</button>
     </div>
 </div>
@@ -130,24 +136,28 @@
         });
     }
 
+    // Calculation Logic
+    function getLiabilityData(fund, off, sDateStr, eDateStr) {
+        const start = new Date(sDateStr), end = new Date(eDateStr);
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) return { active: 0, net: 0 };
+        
+        let mDiff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+        if (end.getDate() < start.getDate()) mDiff--;
+        
+        const active = Math.max(0, mDiff);
+        const rem = Math.max(0, 48 - active);
+        const net = (fund / 48 * rem) - off;
+        return { active, net };
+    }
+
     function calculate() {
         const funding = parseFloat(document.getElementById('funding').value) || 0;
-        const newFunding = parseFloat(document.getElementById('newFunding').value) || 0;
-        const sY = document.getElementById('startY').value, sM = document.getElementById('startM').value, sD = document.getElementById('startD').value;
-        const eY = document.getElementById('endY').value, eM = document.getElementById('endM').value, eD = document.getElementById('endD').value;
+        const offset = parseFloat(document.getElementById('newFunding').value) || 0;
+        const startStr = `${document.getElementById('startM').value}/${document.getElementById('startD').value}/${document.getElementById('startY').value}`;
+        const endStr = `${document.getElementById('endM').value}/${document.getElementById('endD').value}/${document.getElementById('endY').value}`;
 
-        if (!sY || !sM || !sD || !eY || !eM || !eD) { updateUI(0, 48, 0); return; }
-
-        const start = new Date(sY, sM - 1, sD), end = new Date(eY, eM - 1, eD);
-        let active = 0;
-        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
-            let mDiff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-            if (end.getDate() < start.getDate()) mDiff--;
-            active = Math.max(0, mDiff);
-        }
-
-        const net = (funding / 48 * Math.max(0, 48 - active)) - newFunding;
-        updateUI(active, Math.max(0, 48 - active), net);
+        const result = getLiabilityData(funding, offset, startStr, endStr);
+        updateUI(result.active, Math.max(0, 48 - result.active), result.net);
     }
 
     function updateUI(active, remaining, net) {
@@ -160,19 +170,48 @@
         else { el.innerText = "$0.00"; el.className = ""; }
     }
 
-    function addToList() {
-        const deal = {
-            id: Date.now(),
-            name: document.getElementById('accName').value || "Unnamed Account",
-            original: document.getElementById('funding').value,
-            start: `${document.getElementById('startM').value}/${document.getElementById('startD').value}/${document.getElementById('startY').value}`,
-            end: `${document.getElementById('endM').value}/${document.getElementById('endD').value}/${document.getElementById('endY').value}`,
-            offset: document.getElementById('newFunding').value,
-            active: document.getElementById('mActive').innerText,
-            amount: document.getElementById('finalAmt').innerText,
-            color: document.getElementById('finalAmt').className
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const lines = e.target.result.split('\n').filter(line => line.trim() !== "");
+            // Skip header line
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(',').map(c => c.replace(/"/g, '').trim());
+                if (cols.length >= 5) {
+                    const name = cols[0], funding = parseFloat(cols[1]), start = cols[2], end = cols[3], offset = parseFloat(cols[4]);
+                    const calc = getLiabilityData(funding, offset, start, end);
+                    
+                    const formattedAmt = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(Math.abs(calc.net));
+                    let finalStr = "$0.00", color = "";
+                    if (calc.net > 0) { finalStr = "-" + formattedAmt; color = "liability-debt"; }
+                    else if (calc.net < 0) { finalStr = "+" + formattedAmt; color = "liability-gain"; }
+
+                    savedDeals.push({
+                        id: Date.now() + i, name, original: funding, start, end, offset, active: calc.active, amount: finalStr, color: color
+                    });
+                }
+            }
+            localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
+            renderList();
+            event.target.value = ""; // Reset file input
         };
-        savedDeals.push(deal);
+        reader.readAsText(file);
+    }
+
+    function addToList() {
+        const name = document.getElementById('accName').value || "Unnamed Account";
+        const funding = document.getElementById('funding').value;
+        const start = `${document.getElementById('startM').value}/${document.getElementById('startD').value}/${document.getElementById('startY').value}`;
+        const end = `${document.getElementById('endM').value}/${document.getElementById('endD').value}/${document.getElementById('endY').value}`;
+        const offset = document.getElementById('newFunding').value;
+        const active = document.getElementById('mActive').innerText;
+        const amount = document.getElementById('finalAmt').innerText;
+        const color = document.getElementById('finalAmt').className;
+
+        savedDeals.push({ id: Date.now(), name, original: funding, start, end, offset, active, amount, color });
         localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
         renderList();
         document.getElementById('accName').value = "";
@@ -196,15 +235,6 @@
         });
     }
 
-    function clearAllItems() {
-        if (savedDeals.length === 0) return;
-        if (confirm("Are you sure you want to delete ALL tracked deals? This cannot be undone.")) {
-            savedDeals = [];
-            localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
-            renderList();
-        }
-    }
-
     function downloadCSV() {
         if (!savedDeals.length) return alert("No data to export!");
         let csv = "Account Name,Original Funding,Start Date,End Date,Offset,Months Active,Liability Amount\n";
@@ -217,6 +247,14 @@
         a.setAttribute('href', url);
         a.setAttribute('download', `Liability_Export_${new Date().toISOString().split('T')[0]}.csv`);
         a.click();
+    }
+
+    function clearAllItems() {
+        if (savedDeals.length > 0 && confirm("Delete ALL tracked deals?")) {
+            savedDeals = [];
+            localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
+            renderList();
+        }
     }
 
     function deleteItem(id) {
