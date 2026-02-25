@@ -15,56 +15,59 @@
             --bg: #f0f2f5; 
         }
         
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg); margin: 0; padding: 40px 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
         
-        .dashboard { display: grid; grid-template-columns: 1fr 420px; gap: 30px; width: 100%; max-width: 1150px; }
+        .dashboard { display: grid; grid-template-columns: 1fr 380px; gap: 20px; width: 100%; max-width: 1050px; }
         
-        .card, .sidebar { background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); height: fit-content; }
-        h2 { margin-top: 0; font-size: 1.1rem; text-transform: uppercase; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 12px; margin-bottom: 20px; text-align: center; }
+        .card, .sidebar { background: white; padding: 1.2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); height: fit-content; }
         
-        .form-group { margin-bottom: 1.2rem; }
-        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.85rem; }
+        h2 { margin-top: 0; font-size: 1rem; text-transform: uppercase; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 8px; margin-bottom: 15px; text-align: center; letter-spacing: 1px; }
         
+        .form-group { margin-bottom: 0.7rem; }
+        label { display: block; margin-bottom: 4px; font-weight: bold; color: #555; font-size: 0.75rem; }
+        
+        /* Currency Input Wrapper */
+        .currency-wrap { position: relative; display: flex; align-items: center; }
+        .currency-wrap::before { content: '$'; position: absolute; left: 10px; color: #555; font-size: 0.9rem; font-weight: bold; }
+        .currency-wrap input { padding-left: 22px; }
+
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
 
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; background: #fff; transition: border-color 0.2s; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 0.9rem; background: #fff; transition: border-color 0.2s; }
         input:focus, select:focus { border-color: var(--primary); outline: none; }
-        .date-row { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 8px; }
+        .date-row { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 6px; }
         
-        .results { background: #f8f9fa; padding: 1.2rem; border-radius: 10px; margin-top: 1.5rem; border: 1px solid #e9ecef; }
-        .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.95rem; }
-        .total-row { border-top: 2px solid #333; margin-top: 10px; padding-top: 10px; font-weight: 800; font-size: 1.3rem; }
+        .results { background: #f8f9fa; padding: 0.8rem; border-radius: 8px; margin-top: 1rem; border: 1px solid #e9ecef; }
+        .row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 0.85rem; }
+        .total-row { border-top: 2px solid #333; margin-top: 6px; padding-top: 6px; font-weight: 800; font-size: 1.1rem; }
         
         .liability-debt { color: var(--debt-red); }
         .liability-gain { color: var(--gain-green); }
 
-        /* Highlighted Button Styling */
         button, .btn-upload-label { 
-            width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; 
-            text-align: center; display: block; box-sizing: border-box; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;
+            width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; 
+            text-align: center; display: block; box-sizing: border-box; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;
         }
-        button:hover, .btn-upload-label:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        button:hover, .btn-upload-label:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        .btn-add { background: var(--primary); color: white; border: none; padding: 16px; margin-top: 20px; }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 12px; margin-top: 12px; }
         .btn-add:hover { background: var(--primary-hover); }
 
-        .btn-upload-label { background: #fff; border: 2px dashed var(--primary); color: var(--primary); padding: 12px; margin-top: 15px; }
+        .btn-upload-label { background: #fff; border: 2px dashed var(--primary); color: var(--primary); padding: 8px; margin-top: 10px; }
         .btn-upload-label:hover { background: #f4f6f8; }
 
-        .btn-reset, .btn-clear-all { background: none; border: 1px solid var(--debt-red); color: var(--debt-red); padding: 10px; margin-top: 15px; }
+        .btn-reset, .btn-clear-all { background: none; border: 1px solid var(--debt-red); color: var(--debt-red); padding: 7px; margin-top: 10px; }
         .btn-reset:hover, .btn-clear-all:hover { background: #fff5f5; border-color: var(--debt-hover); color: var(--debt-hover); }
 
-        .btn-csv { background: var(--gain-green); color: white; border: none; padding: 14px; margin-top: 20px; }
+        .btn-csv { background: var(--gain-green); color: white; border: none; padding: 10px; margin-top: 15px; }
         .btn-csv:hover { background: var(--gain-hover); }
 
-        /* List Styling */
-        .list-item { background: #fdfdfd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; border-left: 6px solid var(--primary); position: relative; font-size: 0.85rem; text-align: left; }
-        .list-details { color: #666; line-height: 1.5; margin-top: 8px; border-top: 1px solid #f0f0f0; padding-top: 8px; }
-        .list-name { font-weight: 800; font-size: 1rem; color: var(--primary); }
-        .list-amt { font-weight: 800; font-size: 1.1rem; display: block; margin-top: 10px; }
-        .btn-del { position: absolute; right: 10px; top: 10px; background: none !important; border: none !important; color: #bbb !important; box-shadow: none !important; width: auto !important; padding: 0 !important; font-size: 1.4rem !important; text-transform: none !important; }
-        .btn-del:hover { color: var(--debt-red) !important; transform: none !important; }
+        .list-item { background: #fdfdfd; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #eee; border-left: 4px solid var(--primary); position: relative; font-size: 0.75rem; text-align: left; }
+        .list-details { color: #666; line-height: 1.3; margin-top: 5px; border-top: 1px solid #f0f0f0; padding-top: 5px; }
+        .list-name { font-weight: 800; font-size: 0.85rem; color: var(--primary); }
+        .list-amt { font-weight: 800; font-size: 0.95rem; display: block; margin-top: 5px; }
+        .btn-del { position: absolute; right: 8px; top: 8px; background: none !important; border: none !important; color: #bbb !important; box-shadow: none !important; width: auto !important; padding: 0 !important; font-size: 1.2rem !important; text-transform: none !important; }
 
         @media (max-width: 1000px) { .dashboard { grid-template-columns: 1fr; } }
     </style>
@@ -73,7 +76,7 @@
 
 <div class="dashboard">
     <div class="card">
-        <h2>Calculator</h2>
+        <h2>Liability Calculator</h2>
         
         <div class="form-group">
             <label>Account Name</label>
@@ -82,7 +85,9 @@
 
         <div class="form-group">
             <label>Original Funding Amount ($)</label>
-            <input type="number" id="funding" value="0" oninput="calculate()">
+            <div class="currency-wrap">
+                <input type="number" id="funding" placeholder="0" oninput="calculate()">
+            </div>
         </div>
 
         <div class="form-group">
@@ -105,13 +110,15 @@
 
         <div class="form-group">
             <label>New Funding Offset ($)</label>
-            <input type="number" id="newFunding" value="0" oninput="calculate()">
+            <div class="currency-wrap">
+                <input type="number" id="newFunding" placeholder="0" oninput="calculate()">
+            </div>
         </div>
 
         <div class="results">
             <div class="row"><span>Months Active:</span><span id="mActive">0</span></div>
-            <div class="row"><span>Months Remaining (of 48):</span><span id="mLeft">48</span></div>
-            <hr style="border: 0; border-top: 1px solid #ddd; margin: 8px 0;">
+            <div class="row"><span>Months Remaining:</span><span id="mLeft">48</span></div>
+            <hr style="border: 0; border-top: 1px solid #ddd; margin: 5px 0;">
             <div class="row"><span>Initial Funding:</span><span id="resInitial">$0.00</span></div>
             <div class="row"><span>Clawback Amount:</span><span id="resClawback">$0.00</span></div>
             <div class="row"><span>New Funding Offset:</span><span id="resOffset" style="color:var(--gain-green)">$0.00</span></div>
@@ -156,7 +163,7 @@
             m.add(new Option("MM", "")); months.forEach(val => m.add(new Option(val, val)));
             d.add(new Option("DD", "")); for (let i = 1; i <= 31; i++) d.add(new Option(String(i).padStart(2, '0'), String(i).padStart(2, '0')));
             y.add(new Option("YYYY", "")); const curY = new Date().getFullYear();
-            for (let i = curY - 10; i <= curY + 5; i++) y.add(new Option(i, i));
+            for (let i = curY - 10; i <= curY + 10; i++) y.add(new Option(i, i));
         });
     }
 
@@ -219,11 +226,11 @@
         const sM = document.getElementById('startM').value, sD = document.getElementById('startD').value, sY = document.getElementById('startY').value;
         if(!sM || !sD || !sY) return alert("Please select an activation date.");
         const start = `${sM}/${sD}/${sY}`;
-        const end = `${document.getElementById('endM').value}/${document.getElementById('endD').value}/${document.getElementById('endY').value}`;
+        const endStr = `${document.getElementById('endM').value}/${document.getElementById('endD').value}/${document.getElementById('endY').value}`;
         const offset = parseFloat(document.getElementById('newFunding').value) || 0;
-        const data = getLiabilityData(funding, offset, start, end);
+        const data = getLiabilityData(funding, offset, start, endStr);
         const el = document.getElementById('finalAmt');
-        savedDeals.push({ id: Date.now(), name: document.getElementById('accName').value || "Unnamed Account", initial: funding, start, end, clawback: data.clawback, offset: offset, active: data.active, netAmt: el.innerText, color: el.className });
+        savedDeals.push({ id: Date.now(), name: document.getElementById('accName').value || "Unnamed Account", initial: funding, start, end: endStr, clawback: data.clawback, offset: offset, active: data.active, netAmt: el.innerText, color: el.className });
         localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
         renderList();
         document.getElementById('accName').value = "";
@@ -231,9 +238,9 @@
 
     function renderList() {
         const container = document.getElementById('trackingList');
-        container.innerHTML = savedDeals.length ? '' : '<p style="color:#aaa; text-align:center; padding-top:20px;">No saved deals.</p>';
+        container.innerHTML = savedDeals.length ? '' : '<p style="color:#aaa; text-align:center; padding-top:10px; font-size:0.7rem;">No saved deals.</p>';
         savedDeals.forEach(deal => {
-            container.innerHTML += `<div class="list-item"><button class="btn-del" onclick="deleteItem(${deal.id})">×</button><span class="list-name">${deal.name}</span><div class="list-details"><b>Initial Funding:</b> ${formatCurr(deal.initial)}<br><b>Dates:</b> ${deal.start} - ${deal.end}<br><b>Clawback:</b> ${formatCurr(deal.clawback)}<br><b>Offset:</b> ${formatCurr(deal.offset)}</div><span class="list-amt ${deal.color}">${deal.netAmt}</span></div>`;
+            container.innerHTML += `<div class="list-item"><button class="btn-del" onclick="deleteItem(${deal.id})">×</button><span class="list-name">${deal.name}</span><div class="list-details"><b>Funding:</b> ${formatCurr(deal.initial)}<br><b>Dates:</b> ${deal.start} - ${deal.end}<br><b>Clawback:</b> ${formatCurr(deal.clawback)}<br><b>Offset:</b> ${formatCurr(deal.offset)}</div><span class="list-amt ${deal.color}">${deal.netAmt}</span></div>`;
         });
     }
 
@@ -244,9 +251,7 @@
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.setAttribute('href', url);
-        a.setAttribute('download', `Liability_Report.csv`);
-        a.click();
+        a.setAttribute('href', url); a.setAttribute('download', `Liability_Report.csv`); a.click();
     }
 
     function clearAllItems() { if (confirm("Delete ALL tracked deals?")) { savedDeals = []; localStorage.setItem('savedDeals', JSON.stringify(savedDeals)); renderList(); } }
@@ -254,7 +259,7 @@
     function formatCurr(num) { return new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(num); }
 
     function resetAll() {
-        document.getElementById('funding').value = 0; document.getElementById('newFunding').value = 0; document.getElementById('accName').value = "";
+        document.getElementById('funding').value = ""; document.getElementById('newFunding').value = ""; document.getElementById('accName').value = "";
         document.getElementById('startM').value = ""; document.getElementById('startD').value = ""; document.getElementById('startY').value = "";
         const today = new Date();
         document.getElementById('endM').value = String(today.getMonth() + 1).padStart(2, '0');
