@@ -69,7 +69,7 @@
         .btn-add { background: var(--primary); color: white; border: none; padding: 12px; margin-top: 12px; }
         .btn-add:hover { background: var(--primary-hover); }
 
-        .btn-upload-label { background: #fff; border: 2px dashed var(--primary); color: var(--primary); padding: 8px; margin-top: 10px; }
+        .btn-upload-label { background: #fff; border: 1px dashed var(--primary); color: var(--primary); padding: 8px; margin-top: 10px; }
         .btn-upload-label:hover { background: #f4f6f8; }
 
         .btn-reset, .btn-clear-all { background: none; border: 1px solid var(--debt-red); color: var(--debt-red); padding: 7px; margin-top: 10px; }
@@ -79,7 +79,7 @@
         .btn-csv:hover { background: var(--gain-hover); }
 
         .list-item { background: #fdfdfd; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #eee; border-left: 4px solid var(--primary); position: relative; font-size: 0.75rem; text-align: left; }
-        .list-details { color: #666; line-height: 1.3; margin-top: 5px; border-top: 1px solid #f0f0f0; padding-top: 5px; }
+        .list-details { color: #666; line-height: 1.4; margin-top: 5px; border-top: 1px solid #f0f0f0; padding-top: 5px; }
         .list-name { font-weight: 800; font-size: 0.85rem; color: var(--primary); }
         .list-amt { font-weight: 800; font-size: 0.95rem; display: block; margin-top: 5px; }
         .btn-del { position: absolute; right: 8px; top: 8px; background: none !important; border: none !important; color: #bbb !important; box-shadow: none !important; width: auto !important; padding: 0 !important; font-size: 1.2rem !important; text-transform: none !important; }
@@ -136,8 +136,8 @@
         <div class="results">
             <div class="row"><span>Months Active:</span><span id="mActive">0</span></div>
             <div class="row"><span>Months Remaining (of 48):</span><span id="mLeft">48</span></div>
-            <hr style="border: 0; border-top: 1px solid #ddd; margin: 5px 0;">
             <div class="row"><span>Initial Funding:</span><span id="resInitial">$0.00</span></div>
+            <hr style="border: 0; border-top: 1px solid #ddd; margin: 5px 0;">
             <div class="row"><span>Clawback Amount:</span><span id="resClawback">$0.00</span></div>
             <div class="row"><span>New Funding Offset:</span><span id="resOffset">$0.00</span></div>
             <div class="row total-row">
@@ -180,11 +180,8 @@
         
         prefixes.forEach(prefix => {
             const m = document.getElementById(prefix + 'M'), d = document.getElementById(prefix + 'D'), y = document.getElementById(prefix + 'Y');
-            
             m.add(new Option("MM", "")); months.forEach(val => m.add(new Option(val, val)));
-            
             d.add(new Option("DD", "")); for (let i = 1; i <= 31; i++) d.add(new Option(String(i).padStart(2, '0'), String(i).padStart(2, '0')));
-            
             y.add(new Option("YYYY", ""));
             for (let i = currentYear; i >= currentYear - 15; i--) {
                 y.add(new Option(i, i));
@@ -265,14 +262,26 @@
         const container = document.getElementById('trackingList');
         container.innerHTML = savedDeals.length ? '' : '<p style="color:#aaa; text-align:center; padding-top:10px; font-size:0.7rem;">No saved deals.</p>';
         savedDeals.forEach(deal => {
-            container.innerHTML += `<div class="list-item"><button class="btn-del" onclick="deleteItem(${deal.id})">×</button><span class="list-name">${deal.name}</span><div class="list-details"><b>Funding:</b> ${formatCurr(deal.initial)}<br><b>Dates:</b> ${deal.start} - ${deal.end}<br><b>Clawback:</b> ${formatCurr(deal.clawback)}<br><b>Offset:</b> ${formatCurr(deal.offset)}</div><span class="list-amt ${deal.color}">${deal.netAmt}</span></div>`;
+            container.innerHTML += `
+                <div class="list-item">
+                    <button class="btn-del" onclick="deleteItem(${deal.id})">×</button>
+                    <span class="list-name">${deal.name}</span>
+                    <div class="list-details">
+                        <b>Initial Funding:</b> ${formatCurr(deal.initial)}<br>
+                        <b>Dates:</b> ${deal.start} - ${deal.end}<br>
+                        <b>Months Active:</b> ${deal.active}<br>
+                        <b>Clawback:</b> ${formatCurr(deal.clawback)}<br>
+                        <b>New Funding:</b> ${formatCurr(deal.offset)}
+                    </div>
+                    <span class="list-amt ${deal.color}">${deal.netAmt}</span>
+                </div>`;
         });
     }
 
     function downloadCSV() {
         if (!savedDeals.length) return alert("No data to export!");
-        let csv = "Account Name,Initial Funding,Start Date,End Date,Clawback,Offset,Net Liability\n";
-        savedDeals.forEach(d => { csv += `"${d.name}","${d.initial}","${d.start}","${d.end}","${d.clawback}","${d.offset}","${d.netAmt}"\n`; });
+        let csv = "Account Name,Initial Funding,Start Date,End Date,Months Active,Clawback,New Funding,Net Liability\n";
+        savedDeals.forEach(d => { csv += `"${d.name}","${d.initial}","${d.start}","${d.end}","${d.active}","${d.clawback}","${d.offset}","${d.netAmt}"\n`; });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
