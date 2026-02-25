@@ -97,6 +97,11 @@
         <h2>Liability Calculator</h2>
         
         <div class="form-group">
+            <label>MID Number (Optional)</label>
+            <input type="text" id="midNum" placeholder="e.g. 12345678">
+        </div>
+
+        <div class="form-group">
             <label>Account Name</label>
             <input type="text" id="accName" placeholder="e.g. Acme Corp">
         </div>
@@ -177,15 +182,12 @@
     function populateDropdowns() {
         const prefixes = ['start', 'end'];
         const currentYear = new Date().getFullYear();
-        
         prefixes.forEach(prefix => {
             const m = document.getElementById(prefix + 'M'), d = document.getElementById(prefix + 'D'), y = document.getElementById(prefix + 'Y');
             m.add(new Option("MM", "")); months.forEach(val => m.add(new Option(val, val)));
             d.add(new Option("DD", "")); for (let i = 1; i <= 31; i++) d.add(new Option(String(i).padStart(2, '0'), String(i).padStart(2, '0')));
             y.add(new Option("YYYY", ""));
-            for (let i = currentYear; i >= currentYear - 15; i--) {
-                y.add(new Option(i, i));
-            }
+            for (let i = currentYear; i >= currentYear - 15; i--) { y.add(new Option(i, i)); }
         });
     }
 
@@ -229,16 +231,24 @@
             for (let i = 1; i < lines.length; i++) {
                 const cols = lines[i].split(',').map(c => c.replace(/"/g, '').trim());
                 if (cols.length >= 5) {
-                    const name = cols[0], funding = parseFloat(cols[1]), start = cols[2], end = cols[3], offset = parseFloat(cols[4]);
+                    const mid = cols.length >= 6 ? cols[0] : "";
+                    const name = cols.length >= 6 ? cols[1] : cols[0];
+                    const funding = parseFloat(cols.length >= 6 ? cols[2] : cols[1]) || 0;
+                    const start = cols.length >= 6 ? cols[3] : cols[2];
+                    const end = cols.length >= 6 ? cols[4] : cols[3];
+                    const offset = cols.length >= 6 ? parseFloat(cols[5]) : parseFloat(cols[4] || 0);
+                    
                     const calc = getLiabilityData(funding, offset, start, end);
                     let netStr = "$0.00", color = "";
                     if (calc.net > 0) { netStr = "-" + formatCurr(Math.abs(calc.net)); color = "liability-debt"; }
                     else if (calc.net < 0) { netStr = "+" + formatCurr(Math.abs(calc.net)); color = "liability-gain"; }
-                    savedDeals.push({ id: Date.now() + i, name, initial: funding, start, end, clawback: calc.clawback, offset: offset, active: calc.active, netAmt: netStr, color: color });
+                    
+                    savedDeals.push({ id: Date.now() + i, mid, name, initial: funding, start, end, clawback: calc.clawback, offset: offset, active: calc.active, netAmt: netStr, color: color });
                 }
             }
             localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
             renderList();
+            event.target.value = "";
         };
         reader.readAsText(file);
     }
@@ -252,21 +262,29 @@
         const offset = parseFloat(document.getElementById('newFunding').value) || 0;
         const data = getLiabilityData(funding, offset, start, endStr);
         const el = document.getElementById('finalAmt');
-        savedDeals.push({ id: Date.now(), name: document.getElementById('accName').value || "Unnamed Account", initial: funding, start, end: endStr, clawback: data.clawback, offset: offset, active: data.active, netAmt: el.innerText, color: el.className });
+        savedDeals.push({ 
+            id: Date.now(), 
+            mid: document.getElementById('midNum').value,
+            name: document.getElementById('accName').value || "Unnamed Account", 
+            initial: funding, start, end: endStr, clawback: data.clawback, offset: offset, active: data.active, netAmt: el.innerText, color: el.className 
+        });
         localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
         renderList();
         document.getElementById('accName').value = "";
+        document.getElementById('midNum').value = "";
     }
 
     function renderList() {
         const container = document.getElementById('trackingList');
         container.innerHTML = savedDeals.length ? '' : '<p style="color:#aaa; text-align:center; padding-top:10px; font-size:0.7rem;">No saved deals.</p>';
         savedDeals.forEach(deal => {
+            const midText = deal.mid ? `<b>MID:</b> ${deal.mid}<br>` : "";
             container.innerHTML += `
                 <div class="list-item">
                     <button class="btn-del" onclick="deleteItem(${deal.id})">×</button>
                     <span class="list-name">${deal.name}</span>
                     <div class="list-details">
+                        ${midText}
                         <b>Initial Funding:</b> ${formatCurr(deal.initial)}<br>
                         <b>Dates:</b> ${deal.start} - ${deal.end}<br>
                         <b>Months Active:</b> ${deal.active}<br>
@@ -280,8 +298,8 @@
 
     function downloadCSV() {
         if (!savedDeals.length) return alert("No data to export!");
-        let csv = "Account Name,Initial Funding,Start Date,End Date,Months Active,Clawback,New Funding,Net Liability\n";
-        savedDeals.forEach(d => { csv += `"${d.name}","${d.initial}","${d.start}","${d.end}","${d.active}","${d.clawback}","${d.offset}","${d.netAmt}"\n`; });
+        let csv = "MID Number,Account Name,Initial Funding,Start Date,End Date,Months Active,Clawback,New Funding,Net Liability\n";
+        savedDeals.forEach(d => { csv += `"${d.mid || ""}","${d.name}","${d.initial}","${d.start}","${d.end}","${d.active}","${d.clawback}","${d.offset}","${d.netAmt}"\n`; });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -294,6 +312,7 @@
 
     function resetAll() {
         document.getElementById('funding').value = ""; document.getElementById('newFunding').value = ""; document.getElementById('accName').value = "";
+        document.getElementById('midNum').value = "";
         document.getElementById('startM').value = ""; document.getElementById('startD').value = ""; document.getElementById('startY').value = "";
         const today = new Date();
         document.getElementById('endM').value = String(today.getMonth() + 1).padStart(2, '0');
