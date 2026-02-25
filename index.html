@@ -8,7 +8,7 @@
         :root { --primary: #2c3e50; --accent: #d32f2f; --success: #2e7d32; --bg: #f4f7f9; }
         body { font-family: 'Inter', -apple-system, sans-serif; background-color: var(--bg); color: #333; display: flex; justify-content: center; padding: 20px; }
         .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 550px; border-top: 6px solid var(--primary); }
-        h2 { margin: 0 0 0.5rem 0; color: var(--primary); font-size: 1.2rem; text-transform: uppercase; }
+        h2 { margin: 0 0 0.5rem 0; color: var(--primary); font-size: 1.2rem; text-transform: uppercase; text-align: center; }
         .section-label { font-size: 0.75rem; font-weight: 800; color: #999; text-transform: uppercase; margin: 1.5rem 0 0.5rem 0; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-group { margin-bottom: 1rem; }
@@ -20,10 +20,19 @@
         .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dotted #dee2e6; }
         .net-row { border-bottom: none; margin-top: 10px; padding-top: 15px; border-top: 2px solid #ddd; }
         .val { font-weight: 700; }
-        .negative { color: var(--success); } /* If new funding exceeds liability */
-        .positive { color: var(--accent); } /* If they still owe money */
+        .negative { color: var(--success); } 
+        .positive { color: var(--accent); } 
         .btn-print { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 4px; font-weight: 600; cursor: pointer; margin-top: 1.5rem; }
-        @media print { .btn-print, input, label, .section-label { display: none; } .container { box-shadow: none; border: none; width: 100%; } .form-grid { display: none; } }
+        
+        /* Print Styles */
+        @media print { 
+            .btn-print, input { display: none; } 
+            .container { box-shadow: none; border: none; width: 100%; padding: 0; }
+            .section-label { border-bottom: 2px solid #333; color: #000; }
+            /* Show the values typed into inputs as text during print */
+            .print-only { display: block !important; font-weight: bold; padding: 5px 0; }
+        }
+        .print-only { display: none; }
     </style>
 </head>
 <body>
@@ -31,6 +40,103 @@
 <div class="container">
     <h2>Liability & Offset Calculator</h2>
     
+    <div class="form-group">
+        <label>Deal Reference (Client Name / ID)</label>
+        <input type="text" id="refName" placeholder="Optional" oninput="updatePrintRef()">
+        <div id="printRef" class="print-only"></div>
+    </div>
+
     <div class="section-label">Original Deal Details</div>
     <div class="form-grid">
         <div class="form-group full-width">
+            <label>Original Funding Amount ($)</label>
+            <input type="number" id="funding" value="0" oninput="calculate()">
+        </div>
+        <div class="form-group">
+            <label>Activation Date</label>
+            <input type="date" id="startDate" oninput="calculate()">
+        </div>
+        <div class="form-group">
+            <label>Shutdown Date</label>
+            <input type="date" id="endDate" oninput="calculate()">
+        </div>
+    </div>
+
+    <div class="section-label">New Deal Offset</div>
+    <div class="form-group">
+        <label>New Funding Amount ($)</label>
+        <input type="number" id="newFunding" value="0" oninput="calculate()">
+    </div>
+
+    <div class="results">
+        <div class="row"><span>Months Active:</span><span id="mActive" class="val">0</span></div>
+        <div class="row"><span>Months Remaining:</span><span id="mLeft" class="val">48</span></div>
+        <div class="row"><span>Gross Liability:</span><span id="grossLiab" class="val">$0.00</span></div>
+        <div class="row"><span>New Funding Credit:</span><span id="creditAmt" class="val" style="color:var(--success)">-$0.00</span></div>
+        
+        <div class="row net-row" style="font-size: 1.25rem;">
+            <span style="font-weight:800">NET PAYABLE:</span>
+            <span id="finalAmt" class="val positive">$0.00</span>
+        </div>
+    </div>
+
+    <button class="btn-print" onclick="window.print()">Generate Audit Report (PDF)</button>
+</div>
+
+<script>
+    // Set default date to today, but amounts to 0
+    window.onload = function() {
+        document.getElementById('endDate').valueAsDate = new Date();
+        calculate();
+    };
+
+    function updatePrintRef() {
+        document.getElementById('printRef').innerText = document.getElementById('refName').value;
+    }
+
+    function calculate() {
+        const funding = parseFloat(document.getElementById('funding').value) || 0;
+        const newFunding = parseFloat(document.getElementById('newFunding').value) || 0;
+        const start = new Date(document.getElementById('startDate').value);
+        const end = new Date(document.getElementById('endDate').value);
+
+        let active = 0;
+        let remaining = 48;
+        let grossLiability = 0;
+        let netPayable = 0;
+
+        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+            let months = (end.getFullYear() - start.getFullYear()) * 12;
+            months += end.getMonth() - start.getMonth();
+            if (end.getDate() < start.getDate()) months--;
+
+            active = Math.max(0, months);
+            remaining = Math.max(0, 48 - active);
+            grossLiability = (funding / 48) * remaining;
+        }
+
+        netPayable = Math.max(0, grossLiability - newFunding);
+
+        // Update UI
+        document.getElementById('mActive').innerText = active;
+        document.getElementById('mLeft').innerText = remaining;
+        document.getElementById('grossLiab').innerText = formatCurr(grossLiability);
+        document.getElementById('creditAmt').innerText = "-" + formatCurr(newFunding);
+        
+        const finalEl = document.getElementById('finalAmt');
+        finalEl.innerText = formatCurr(netPayable);
+        
+        if (netPayable <= 0) {
+            finalEl.className = "val negative";
+        } else {
+            finalEl.className = "val positive";
+        }
+    }
+
+    function formatCurr(num) {
+        return new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(num);
+    }
+</script>
+
+</body>
+</html>
