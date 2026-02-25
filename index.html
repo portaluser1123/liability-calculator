@@ -15,9 +15,26 @@
             --bg: #f0f2f5; 
         }
         
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+        /* Centering Logic */
+        body { 
+            font-family: -apple-system, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; /* Horizontal Center */
+            align-items: center;     /* Vertical Center */
+            min-height: 100vh;       /* Full Viewport Height */
+            padding: 20px;
+            box-sizing: border-box;
+        }
         
-        .dashboard { display: grid; grid-template-columns: 1fr 380px; gap: 20px; width: 100%; max-width: 1050px; }
+        .dashboard { 
+            display: grid; 
+            grid-template-columns: 1fr 380px; 
+            gap: 20px; 
+            width: 100%; 
+            max-width: 1050px; 
+        }
         
         .card, .sidebar { background: white; padding: 1.2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); height: fit-content; }
         
@@ -26,7 +43,7 @@
         .form-group { margin-bottom: 0.7rem; }
         label { display: block; margin-bottom: 4px; font-weight: bold; color: #555; font-size: 0.75rem; }
         
-        /* Currency Input Wrapper */
+        /* Currency Input Styling */
         .currency-wrap { position: relative; display: flex; align-items: center; }
         .currency-wrap::before { content: '$'; position: absolute; left: 10px; color: #555; font-size: 0.9rem; font-weight: bold; }
         .currency-wrap input { padding-left: 22px; }
@@ -69,7 +86,10 @@
         .list-amt { font-weight: 800; font-size: 0.95rem; display: block; margin-top: 5px; }
         .btn-del { position: absolute; right: 8px; top: 8px; background: none !important; border: none !important; color: #bbb !important; box-shadow: none !important; width: auto !important; padding: 0 !important; font-size: 1.2rem !important; text-transform: none !important; }
 
-        @media (max-width: 1000px) { .dashboard { grid-template-columns: 1fr; } }
+        @media (max-width: 1000px) { 
+            body { align-items: flex-start; padding: 10px; }
+            .dashboard { grid-template-columns: 1fr; } 
+        }
     </style>
 </head>
 <body>
@@ -117,7 +137,7 @@
 
         <div class="results">
             <div class="row"><span>Months Active:</span><span id="mActive">0</span></div>
-            <div class="row"><span>Months Remaining:</span><span id="mLeft">48</span></div>
+            <div class="row"><span>Months Remaining (of 48):</span><span id="mLeft">48</span></div>
             <hr style="border: 0; border-top: 1px solid #ddd; margin: 5px 0;">
             <div class="row"><span>Initial Funding:</span><span id="resInitial">$0.00</span></div>
             <div class="row"><span>Clawback Amount:</span><span id="resClawback">$0.00</span></div>
