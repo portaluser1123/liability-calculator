@@ -3,153 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liability Calculator</title>
+    <title>Liability Dashboard</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 100%; max-width: 420px; }
-        h2 { margin-top: 0; text-align: center; color: #333; font-size: 1.2rem; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .form-group { margin-bottom: 1.2rem; }
-        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.85rem; }
-        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        .date-row { display: grid; grid-template-columns: 1.2fr 1fr 1.2fr; gap: 8px; }
-        select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; background: #fff; cursor: pointer; }
-        .results { background: #f9f9f9; padding: 1.2rem; border-radius: 8px; margin-top: 1.5rem; border: 1px solid #eee; }
-        .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.95rem; }
-        .total-row { border-top: 2px solid #333; margin-top: 12px; padding-top: 12px; font-weight: 800; font-size: 1.25rem; }
-        .payback { color: #d32f2f; }
-        .btn-reset { width: 100%; background: #6c757d; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 1.5rem; font-size: 0.85rem; text-transform: uppercase; }
-        .btn-reset:hover { background: #5a6268; }
+        :root { --primary: #2c3e50; --accent: #d32f2f; --bg: #f0f2f5; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        
+        /* Layout Grid */
+        .dashboard { display: grid; grid-template-columns: 1fr 350px; gap: 20px; width: 100%; max-width: 900px; }
+        
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); height: fit-content; }
+        h2 { margin-top: 0; font-size: 1.1rem; text-transform: uppercase; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.8rem; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; }
+        .date-row { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 5px; }
+        
+        .results { background: #f9f9f9; padding: 1rem; border-radius: 8px; margin-top: 1rem; border: 1px solid #eee; }
+        .row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.9rem; }
+        .total-row { border-top: 2px solid #333; margin-top: 8px; padding-top: 8px; font-weight: 800; font-size: 1.1rem; }
+        
+        /* Buttons */
+        .btn-add { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-reset { width: 100%; background: #e0e0e0; border: none; padding: 8px; border-radius: 6px; margin-top: 10px; cursor: pointer; font-size: 0.75rem; color: #666; }
+        
+        /* Sidebar/List */
+        .sidebar { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .list-item { background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid var(--primary); position: relative; }
+        .list-name { font-weight: bold; display: block; font-size: 0.9rem; }
+        .list-amt { color: var(--accent); font-weight: bold; }
+        .btn-del { position: absolute; right: 10px; top: 10px; background: none; border: none; color: #ccc; cursor: pointer; font-size: 1rem; }
+        .btn-del:hover { color: var(--accent); }
+
+        @media (max-width: 800px) { .dashboard { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Liability Calculator</h2>
-    
-    <div class="form-group">
-        <label>Original Funding Amount ($)</label>
-        <input type="number" id="funding" value="0" oninput="calculate()">
-    </div>
-
-    <div class="form-group">
-        <label>Activation Date (MM / DD / YYYY)</label>
-        <div class="date-row">
-            <select id="startM" onchange="calculate()"></select>
-            <select id="startD" onchange="calculate()"></select>
-            <select id="startY" onchange="calculate()"></select>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>Shutdown Date (MM / DD / YYYY)</label>
-        <div class="date-row">
-            <select id="endM" onchange="calculate()"></select>
-            <select id="endD" onchange="calculate()"></select>
-            <select id="endY" onchange="calculate()"></select>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>New Funding Amount ($)</label>
-        <input type="number" id="newFunding" value="0" oninput="calculate()">
-    </div>
-
-    <div class="results">
-        <div class="row"><span>Months Active:</span><span id="mActive">0</span></div>
-        <div class="row"><span>Months Remaining:</span><span id="mLeft">48</span></div>
-        <div class="row"><span>Gross Liability:</span><span id="grossLiab">$0.00</span></div>
-        <div class="row"><span>New Funding Credit:</span><span id="creditAmt" style="color:#2e7d32">-$0.00</span></div>
+<div class="dashboard">
+    <div class="card">
+        <h2>Calculator</h2>
         
-        <div class="row total-row">
-            <span>NET PAYABLE:</span>
-            <span id="finalAmt" class="payback">$0.00</span>
+        <div class="form-group">
+            <label>Account Name</label>
+            <input type="text" id="accName" placeholder="e.g. Acme Corp">
         </div>
+
+        <div class="form-group">
+            <label>Original Funding ($)</label>
+            <input type="number" id="funding" value="0" oninput="calculate()">
+        </div>
+
+        <div class="form-group">
+            <label>Activation Date (M/D/Y)</label>
+            <div class="date-row">
+                <select id="startM" onchange="calculate()"></select>
+                <select id="startD" onchange="calculate()"></select>
+                <select id="startY" onchange="calculate()"></select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Shutdown Date (M/D/Y)</label>
+            <div class="date-row">
+                <select id="endM" onchange="calculate()"></select>
+                <select id="endD" onchange="calculate()"></select>
+                <select id="endY" onchange="calculate()"></select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>New Funding Offset ($)</label>
+            <input type="number" id="newFunding" value="0" oninput="calculate()">
+        </div>
+
+        <div class="results">
+            <div class="row"><span>Months Active:</span><span id="mActive">0</span></div>
+            <div class="row"><span>Months Remaining:</span><span id="mLeft">48</span></div>
+            <div class="row" style="font-weight:bold;"><span>Net Liability:</span><span id="finalAmt" style="color:var(--accent)">$0.00</span></div>
+        </div>
+
+        <button class="btn-add" onclick="addToList()">Add to Tracking List</button>
+        <button class="btn-reset" onclick="resetAll()">Clear Calculator</button>
     </div>
 
-    <button class="btn-reset" onclick="resetAll()">Reset All Fields</button>
+    <div class="sidebar">
+        <h2>Tracking List</h2>
+        <div id="trackingList">
+            </div>
+    </div>
 </div>
 
 <script>
     const months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
-    
+    let savedDeals = JSON.parse(localStorage.getItem('savedDeals')) || [];
+
     window.onload = function() {
         populateDropdowns();
+        renderList();
         resetAll();
     };
 
     function populateDropdowns() {
         const selects = ['start', 'end'];
         selects.forEach(prefix => {
-            const m = document.getElementById(prefix + 'M');
-            const d = document.getElementById(prefix + 'D');
-            const y = document.getElementById(prefix + 'Y');
-
+            const m = document.getElementById(prefix + 'M'), d = document.getElementById(prefix + 'D'), y = document.getElementById(prefix + 'Y');
             months.forEach(val => m.add(new Option(val, val)));
-            for (let i = 1; i <= 31; i++) {
-                const val = String(i).padStart(2, '0');
-                d.add(new Option(val, val));
-            }
-            const currentYear = new Date().getFullYear();
-            for (let i = currentYear - 10; i <= currentYear + 5; i++) {
-                y.add(new Option(i, i));
-            }
+            for (let i = 1; i <= 31; i++) { d.add(new Option(String(i).padStart(2, '0'), String(i).padStart(2, '0'))); }
+            const curY = new Date().getFullYear();
+            for (let i = curY - 10; i <= curY + 5; i++) { y.add(new Option(i, i)); }
         });
-    }
-
-    function resetAll() {
-        document.getElementById('funding').value = 0;
-        document.getElementById('newFunding').value = 0;
-        
-        const today = new Date();
-        document.getElementById('startM').value = "01";
-        document.getElementById('startD').value = "01";
-        document.getElementById('startY').value = today.getFullYear() - 1;
-
-        document.getElementById('endM').value = String(today.getMonth() + 1).padStart(2, '0');
-        document.getElementById('endD').value = String(today.getDate()).padStart(2, '0');
-        document.getElementById('endY').value = today.getFullYear();
-
-        calculate();
     }
 
     function calculate() {
         const funding = parseFloat(document.getElementById('funding').value) || 0;
         const newFunding = parseFloat(document.getElementById('newFunding').value) || 0;
-
-        const start = new Date(
-            document.getElementById('startY').value,
-            document.getElementById('startM').value - 1,
-            document.getElementById('startD').value
-        );
-        const end = new Date(
-            document.getElementById('endY').value,
-            document.getElementById('endM').value - 1,
-            document.getElementById('endD').value
-        );
-
+        const start = new Date(document.getElementById('startY').value, document.getElementById('startM').value - 1, document.getElementById('startD').value);
+        const end = new Date(document.getElementById('endY').value, document.getElementById('endM').value - 1, document.getElementById('endD').value);
+        
         let active = 0;
         if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
-            let monthsDiff = (end.getFullYear() - start.getFullYear()) * 12;
-            monthsDiff += end.getMonth() - start.getMonth();
-            if (end.getDate() < start.getDate()) monthsDiff--;
-            active = Math.max(0, monthsDiff);
+            let mDiff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+            if (end.getDate() < start.getDate()) mDiff--;
+            active = Math.max(0, mDiff);
         }
-
+        
         const remaining = Math.max(0, 48 - active);
-        const grossLiability = (funding / 48) * remaining;
-        const netPayable = Math.max(0, grossLiability - newFunding);
+        const net = Math.max(0, (funding / 48 * remaining) - newFunding);
 
         document.getElementById('mActive').innerText = active;
         document.getElementById('mLeft').innerText = remaining;
-        document.getElementById('grossLiab').innerText = formatCurr(grossLiability);
-        document.getElementById('creditAmt').innerText = "-" + formatCurr(newFunding);
-        document.getElementById('finalAmt').innerText = formatCurr(netPayable);
+        document.getElementById('finalAmt').innerText = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(net);
     }
 
-    function formatCurr(num) {
-        return new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(num);
+    function addToList() {
+        const name = document.getElementById('accName').value || "Unnamed Account";
+        const amount = document.getElementById('finalAmt').innerText;
+        savedDeals.push({ name, amount, id: Date.now() });
+        localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
+        renderList();
+        document.getElementById('accName').value = "";
+    }
+
+    function renderList() {
+        const container = document.getElementById('trackingList');
+        container.innerHTML = savedDeals.length ? '' : '<p style="color:#999; font-size:0.8rem;">No deals saved yet.</p>';
+        savedDeals.forEach(deal => {
+            container.innerHTML += `
+                <div class="list-item">
+                    <span class="list-name">${deal.name}</span>
+                    <span class="list-amt">${deal.amount}</span>
+                    <button class="btn-del" onclick="deleteItem(${deal.id})">×</button>
+                </div>`;
+        });
+    }
+
+    function deleteItem(id) {
+        savedDeals = savedDeals.filter(d => d.id !== id);
+        localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
+        renderList();
+    }
+
+    function resetAll() {
+        document.getElementById('funding').value = 0;
+        document.getElementById('newFunding').value = 0;
+        document.getElementById('accName').value = "";
+        const today = new Date();
+        document.getElementById('startM').value = "01"; document.getElementById('startD').value = "01"; document.getElementById('startY').value = today.getFullYear() - 1;
+        document.getElementById('endM').value = String(today.getMonth() + 1).padStart(2, '0');
+        document.getElementById('endD').value = String(today.getDate()).padStart(2, '0');
+        document.getElementById('endY').value = today.getFullYear();
+        calculate();
     }
 </script>
-
 </body>
 </html>
